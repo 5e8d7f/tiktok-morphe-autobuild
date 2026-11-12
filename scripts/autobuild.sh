@@ -101,9 +101,18 @@ validate_manifest() {
   ' "$MANIFEST_PATH" >/dev/null || fail "Manifest validation failed: $MANIFEST_PATH"
 }
 
+issues_enabled() {
+  [[ "$(gh repo view "$build_repository" --json hasIssuesEnabled --jq '.hasIssuesEnabled' 2>/dev/null)" == "true" ]]
+}
+
 open_or_update_mismatch_issue() {
   local body_file="$1"
   local issue_number
+
+  if ! issues_enabled; then
+    notice "Issues are disabled for $build_repository; skipping the version-mismatch issue."
+    return 0
+  fi
 
   gh label create "autobuild-version-mismatch" \
     --repo "$build_repository" \
@@ -136,6 +145,12 @@ open_or_update_mismatch_issue() {
 
 close_mismatch_issues() {
   local issue_numbers
+
+  if ! issues_enabled; then
+    notice "Issues are disabled for $build_repository; no version-mismatch issue to close."
+    return 0
+  fi
+
   issue_numbers="$(gh issue list \
     --repo "$build_repository" \
     --state open \
@@ -206,7 +221,7 @@ readonly signing_alias signer_name signing_certificate_sha256
 readonly vt_manifest_mode vt_required vt_request_interval vt_rate_limit_max_wait vt_max_wait
 readonly vt_block_on_detections vt_maximum_malicious vt_maximum_suspicious vt_mode_override vt_mode
 readonly check_only="${CHECK_ONLY:-false}"
-readonly workflow_url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID:-unknown}"
+readonly workflow_url="${WORKFLOW_URL:-${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID:-unknown}}"
 
 [[ "$check_only" == "true" || "$check_only" == "false" ]] || fail "CHECK_ONLY must be true or false."
 
@@ -269,7 +284,7 @@ java -jar "$morphe_jar" list-versions \
   --filter-package-names="$package_name" 2>&1 | tee "$compatibility_output"
 
 target_patch_count="$(awk -v version="$version_name" '
-  $1 == version && $2 ~ /^\(/ {
+  $1 == version && match($0, /\([0-9]+ patches?\)/) {
     line = $0
     sub(/^.*\(/, "", line)
     sub(/ patches?\).*$/, "", line)
@@ -279,7 +294,7 @@ target_patch_count="$(awk -v version="$version_name" '
 ' "$compatibility_output")"
 
 if [[ -z "$target_patch_count" || "$target_patch_count" != "$enabled_patch_count" ]]; then
-  supported_versions="$(awk '$2 ~ /^\(/ { print "- `" $1 "`" }' "$compatibility_output")"
+  supported_versions="$(awk '$1 ~ /^[0-9]+(\.[0-9]+)*$/ && /\([0-9]+ patches?\)/ { print "- `" $1 "`" }' "$compatibility_output")"
   [[ -n "$supported_versions" ]] || supported_versions="- Morphe did not report a compatible version. See the captured output below."
   incompatible_default_patches="$(awk -v version="$version_name" '
     BEGIN { RS = ""; FS = "\n" }
@@ -362,9 +377,11 @@ fi
 : "${SIGNING_KEYSTORE_BASE64:?SIGNING_KEYSTORE_BASE64 is required for a build}"
 : "${SIGNING_KEY_PASSWORD:?SIGNING_KEY_PASSWORD is required for a build}"
 
-base_release_json="$(gh release view "$base_release_tag" \
+if ! base_release_json="$(gh release view "$base_release_tag" \
   --repo "$build_repository" \
-  --json tagName,url,isPrerelease,assets)"
+  --json tagName,url,isPrerelease,assets 2>/dev/null)"; then
+  fail "Base release $base_release_tag was not found in $build_repository. Upload $base_asset_name as its only asset and verify SHA-256 $base_sha256."
+fi
 [[ "$(jq -r '.isPrerelease' <<<"$base_release_json")" == "true" ]] || fail "Base release $base_release_tag must be marked as a prerelease."
 base_asset_count="$(jq --arg name "$base_asset_name" '[.assets[] | select(.name == $name)] | length' <<<"$base_release_json")"
 [[ "$base_asset_count" == "1" ]] || fail "Base release $base_release_tag must contain exactly one asset named $base_asset_name."
@@ -397,12 +414,14 @@ java -jar "$morphe_jar" patch \
 [[ -s "$output_apk" ]] || fail "Morphe did not produce the expected APK: $output_apk_name"
 [[ -s "$patch_result" ]] || fail "Morphe did not produce patch-result.json."
 jq -e --arg package "$package_name" --arg version "$version_name" '
+  # Morphe 2.1.1 names the stage list stepResults; older builds used patchingSteps.
+  ((.stepResults // .patchingSteps) // []) as $steps |
   # Morphe omits the success field when it retains its default true value.
   (.success // true) == true and
   .packageName == $package and
   .packageVersion == $version and
-  (.patchingSteps | length >= 3) and
-  all(.patchingSteps[]; .success == true) and
+  ($steps | length >= 3) and
+  all($steps[]; .success == true) and
   (.failedPatches | length == 0)
 ' "$patch_result" >/dev/null || fail "Morphe result JSON did not prove a complete successful patch run."
 actual_applied_count="$(jq -er '.appliedPatches | length' "$patch_result")"

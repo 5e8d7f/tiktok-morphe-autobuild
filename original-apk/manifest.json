@@ -3,21 +3,21 @@
   "app": {
     "name": "TikTok",
     "package_name": "com.zhiliaoapp.musically",
-    "version_name": "46.2.3",
-    "version_code": 2024602030
+    "version_name": "47.7.3",
+    "version_code": 2024707030
   },
   "base_apk": {
-    "revision": 2,
+    "revision": 1,
     "source": {
       "provider": "APKMirror",
-      "url": "https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/"
+      "url": "https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-47-7-3-release/tiktok-47-7-3-android-apk-download/"
     },
-    "release_tag": "base-tiktok-46.2.3-r2",
-    "asset_name": "TikTok-46.2.3-stock.apk",
-    "sha256": "2fbe277a568e0e820cb51b09bcf0c0d788dc4fb070e66025f12d11cd3ec16936"
+    "release_tag": "base-tiktok-47.7.3-r1",
+    "asset_name": "TikTok-47.7.3-stock.apk",
+    "sha256": "9b35d4caed14ae54938eca1fa27fc89ce8307a9cf8350b80f66a9968fc3684e9"
   },
   "patch_source": {
-    "repository": "icysymmetra/tiktok-patches-for-morphe",
+    "repository": "SysAdminDoc/HushFeed",
     "channel": "stable"
   },
   "morphe": {
@@ -27,8 +27,8 @@
   },
   "security_scan": {
     "provider": "virustotal",
-    "mode": "upload_public",
-    "required": true,
+    "mode": "disabled",
+    "required": false,
     "request_interval_seconds": 16,
     "rate_limit_max_wait_seconds": 3600,
     "max_wait_seconds": 3600,
@@ -40,6 +40,6 @@
     "alias": "Morphe",
     "signer": "Morphe",
     "store_password_mode": "none",
-    "certificate_sha256": "43635fbdc8eb708ed8c484e3f1a4ec7234f0bd1b68de9408cbb6f0b0ee99cbf8"
+    "certificate_sha256": "e6ff0f50376e7f4b575661149eb5c913aea3433a2e52f22abfa58e4567f1eba6"
   }
 }

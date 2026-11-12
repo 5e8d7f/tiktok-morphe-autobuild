@@ -5,11 +5,17 @@ asset of the prerelease named by `manifest.json`.
 
 For the current input:
 
-- tag: `base-tiktok-46.2.3-r2`
-- asset: `TikTok-46.2.3-stock.apk`
-- SHA-256: `2fbe277a568e0e820cb51b09bcf0c0d788dc4fb070e66025f12d11cd3ec16936`
+- TikTok: `47.7.3` (`2024707030`)
+- tag: `base-tiktok-47.7.3-r1`
+- asset: `TikTok-47.7.3-stock.apk`
+- SHA-256: `9b35d4caed14ae54938eca1fa27fc89ce8307a9cf8350b80f66a9968fc3684e9`
 
-GitHub release immutability is enabled, and revision 2 is protected by it. If
+Use the plain 47.7.3 APK from APKMirror (arm64-v8a + armeabi-v7a, nodpi), not
+the `.apkm` bundle: the desktop patcher's bundle merge moves resource files
+around, and HushFeed's Accent color, AMOLED dark theme and Custom launcher icon
+patches refuse that result.
+
+GitHub release immutability is enabled, and revision 1 is protected by it. If
 the bytes ever need to change, increment `base_apk.revision`, create a new
 `-rN` prerelease, and update the manifest. Never replace the asset behind an
 existing tag.
