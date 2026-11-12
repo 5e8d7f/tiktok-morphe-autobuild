@@ -18,7 +18,7 @@ concurrency:
 jobs:
   scan:
     name: Fresh scan and annotate release
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 180
 
     steps:

@@ -1,6 +1,6 @@
 # TikTok Morphe AutoBuild
 
-[![TikTok Morphe AutoBuild](https://github.com/maullando/tiktok-morphe-autobuild/actions/workflows/autobuild.yml/badge.svg)](https://github.com/maullando/tiktok-morphe-autobuild/actions/workflows/autobuild.yml)
+[![TikTok Morphe AutoBuild](https://github.com/5e8d7f/tiktok-morphe-autobuild/actions/workflows/autobuild.yml/badge.svg)](https://github.com/5e8d7f/tiktok-morphe-autobuild/actions/workflows/autobuild.yml)
 
 This repository is the binary-build companion to
 [`SysAdminDoc/HushFeed`](https://github.com/SysAdminDoc/HushFeed).
