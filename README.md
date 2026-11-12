@@ -58,7 +58,9 @@ and asset layout.
 
 GitHub release immutability is enforced for the repository. Published tags and
 assets cannot be moved, replaced, or deleted; the workflow performs all checks
-before asking GitHub to publish the release.
+before asking GitHub to publish the release in a single step. Immutability was
+enabled after the initial `r1` releases, so those two remain mutable; every
+release published from now on is immutable.
 
 There is deliberately no `--force`, `--continue-on-error`, automatic
 `STRIP_SAFE`/`FULL` fallback, ABI stripping, APK scraper, or committed signing
