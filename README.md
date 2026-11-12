@@ -1,9 +1,9 @@
 # TikTok Morphe AutoBuild
 
-[![TikTok Morphe AutoBuild](https://github.com/icysymmetra/tiktok-morphe-autobuild/actions/workflows/autobuild.yml/badge.svg)](https://github.com/icysymmetra/tiktok-morphe-autobuild/actions/workflows/autobuild.yml)
+[![TikTok Morphe AutoBuild](https://github.com/maullando/tiktok-morphe-autobuild/actions/workflows/autobuild.yml/badge.svg)](https://github.com/maullando/tiktok-morphe-autobuild/actions/workflows/autobuild.yml)
 
 This repository is the binary-build companion to
-[`icysymmetra/tiktok-patches-for-morphe`](https://github.com/icysymmetra/tiktok-patches-for-morphe).
+[`SysAdminDoc/HushFeed`](https://github.com/SysAdminDoc/HushFeed).
 Patch source and APK automation intentionally live in separate repositories.
 
 The builder polls every three hours, resolves the latest stable patch release
@@ -12,15 +12,19 @@ combination that does not already have a release.
 
 ## Current build contract
 
-- TikTok: `com.zhiliaoapp.musically` `46.2.3` (`2024602030`)
-- Base APK: immutable prerelease `base-tiktok-46.2.3-r2`
-- Patch source: `icysymmetra/tiktok-patches-for-morphe`, stable releases only
+- TikTok: `com.zhiliaoapp.musically` `47.7.3` (`2024707030`)
+- Base APK: immutable prerelease `base-tiktok-47.7.3-r1`
+- Patch source: `SysAdminDoc/HushFeed`, stable releases only
 - Morphe: latest stable `MorpheApp/morphe-desktop`
 - Bytecode mode: explicitly `STRIP_FAST`
-- Patch selection: upstream defaults
-- VirusTotal: required fresh public analysis for every new APK release
+- Patch selection: HushFeed's default-enabled patches
+- VirusTotal: currently `disabled` (no API key configured)
 - Signing: persistent Morphe BKS key, certificate SHA-256
-  `43635fbdc8eb708ed8c484e3f1a4ec7234f0bd1b68de9408cbb6f0b0ee99cbf8`
+  `e6ff0f50376e7f4b575661149eb5c913aea3433a2e52f22abfa58e4567f1eba6`
+
+The builder expects the base prerelease above to exist. Upload the stock APK
+from APKMirror there before the first run; `original-apk/README.md` has the
+exact asset name and SHA-256.
 
 ## Build flow
 
@@ -68,16 +72,19 @@ manual workflow run:
 - `disabled`: make no VirusTotal requests.
 - `lookup_only`: look up the patched SHA-256 and reuse an existing
   report, but never upload the APK.
-- `upload_public` (default): upload an unknown APK through VirusTotal's
-  large-file endpoint, or request a fresh rescan when it already exists, then
-  poll the exact analysis to completion.
+- `upload_public` (requires `VT_API_KEY`): upload an unknown APK through
+  VirusTotal's large-file endpoint, or request a fresh rescan when it already
+  exists, then poll the exact analysis to completion.
+
+This repository currently uses `mode: disabled` and `required: false` because no
+`VT_API_KEY` secret is configured. Set both to enable the policy.
 
 The integration spaces API requests by at least 16 seconds, honors HTTP `429`
 `Retry-After`, can spend up to 60 minutes waiting out rate limits across a run,
 and then allows another 60 minutes for the analysis itself. If a daily quota
 cannot recover within that bound, the build stops safely and a later scheduled
-run retries it. The workflow refuses to publish without a completed fresh
-analysis. Detection counts remain
+run retries it. When `required` is true, the workflow refuses to publish without
+a completed fresh analysis. Detection counts remain
 informational; `block_on_detections` can separately enforce the configured
 malicious/suspicious thresholds. Complete per-engine results are preserved in
 `build-info.json`, not just the summary counts shown in the release notes.
@@ -94,7 +101,7 @@ the free public API is for non-commercial use. VirusTotal accepts large uploads
 up to 650 MB but warns that files over 200 MB may receive incomplete engine
 coverage; this APK is in that warning range. The configured `upload_public`
 policy therefore provides the fullest public VirusTotal result available, but
-cannot make unsupported or timed-out engines inspect a 564 MB APK.
+cannot make unsupported or timed-out engines inspect a file that large.
 
 ## Updating TikTok
 
