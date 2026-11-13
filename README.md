@@ -13,7 +13,7 @@ combination that does not already have a release.
 ## Current build contract
 
 - TikTok: `com.zhiliaoapp.musically` `47.7.3` (`2024707030`)
-- Base APK: immutable prerelease `base-tiktok-47.7.3-r1`
+- Base APK: hash-pinned prerelease `base-tiktok-47.7.3-r1`
 - Patch source: `SysAdminDoc/HushFeed`, stable releases only
 - Morphe: latest stable `MorpheApp/morphe-desktop`
 - Bytecode mode: explicitly `STRIP_FAST`
@@ -34,7 +34,7 @@ exact asset name and SHA-256.
 4. Download the exact `.mpp` and `-all.jar` assets and verify their GitHub SHA-256 digests when available.
 5. Ask Morphe `list-versions` whether the manifest's package/version is supported.
 6. On mismatch, create or update one rolling GitHub issue and stop successfully.
-7. On a match, download the stock APK from its immutable prerelease and verify the manifest SHA-256.
+7. On a match, download the stock APK from its base prerelease and verify the manifest SHA-256.
 8. Patch with explicit `STRIP_FAST`, compatibility enforcement, upstream defaults, and the persistent signing key.
 9. Require a successful Morphe result with zero failed patches and a valid APK archive.
 10. Upload a new APK to VirusTotal, or request a fresh rescan when its hash already exists, then wait for a completed analysis.
@@ -56,11 +56,12 @@ GitHub adds its own source `.zip` and `.tar.gz` links to every tag; workflows
 cannot hide those entries. Older immutable releases keep their original notes
 and asset layout.
 
-GitHub release immutability is enforced for the repository. Published tags and
-assets cannot be moved, replaced, or deleted; the workflow performs all checks
-before asking GitHub to publish the release in a single step. Immutability was
-enabled after the initial `r1` releases, so those two remain mutable; every
-release published from now on is immutable.
+GitHub release immutability is enforced for the repository. Published build
+releases and their tags/assets cannot be moved, replaced, or deleted; the
+workflow performs all checks before asking GitHub to publish the release in a
+single step. The `base-tiktok-47.7.3-r1` input predates immutability and remains
+mutable, but its SHA-256 is pinned in `original-apk/manifest.json` and is
+verified before every patch run.
 
 There is deliberately no `--force`, `--continue-on-error`, automatic
 `STRIP_SAFE`/`FULL` fallback, ABI stripping, APK scraper, or committed signing
